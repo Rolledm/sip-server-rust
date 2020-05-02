@@ -1,7 +1,10 @@
 use mongodb::{Client, options::ClientOptions};
 use std::thread;
 use std::net::{TcpListener, TcpStream};
+use std::io::prelude::*;
 use std::sync::mpsc;
+
+mod sip;
 
 enum Message {
     SIP(String),
@@ -19,8 +22,15 @@ fn main() {
     let tx1 = tx.clone();
 
     let th1 = thread::spawn(move || {
-        let l1 = TcpListener::bind("192.168.1.37:7878").unwrap();
+        let l1 = TcpListener::bind("localhost:7878").unwrap();
         for stream in l1.incoming() {
+            let mut stream = stream.unwrap();
+            let mut buffer = [0; 512];
+            stream.read(&mut buffer).unwrap();
+
+            //stream.write(b"hello").unwrap();
+            let message = sip::Message::new(sip::MessageType::Request(sip::RequestMethod::Register)).to(String::from("tototo")).toString();
+            stream.write(message.as_bytes()).unwrap();
             tx1.send(1).unwrap();
         }
     });
