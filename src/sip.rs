@@ -43,10 +43,18 @@ impl Message {
         self
     }
 
-    pub fn toString(&mut self) -> String {
+    pub fn to_string(&mut self) -> String {
         let start_line = match &self.mtype {
             MessageType::Request(method) => {
-                format!("BYE sip:{}@atlanta.example.com SIP/2.0\r\n", self.to)
+                let method_str = match method {
+                    RequestMethod::ACK => "ACK",
+                    RequestMethod::Bye => "BYE",
+                    RequestMethod::Cancel => "CANCEL",
+                    RequestMethod::Invite => "INVITE",
+                    RequestMethod::Options => "OPTIONS",
+                    RequestMethod::Register => "REGISTER",
+                };
+                format!("{} sip:{}@atlanta.example.com SIP/2.0\r\n", method_str, self.to)
             },
             MessageType::Response(response) => {
                 format!("SIP/2.0 {}", response)
