@@ -43,8 +43,8 @@ impl Message {
         self
     }
 
-    pub fn to_string(&mut self) -> String {
-        let start_line = match &self.mtype {
+    fn get_method_name(&mut self) -> Result<String, &'static str> {
+        match &self.mtype {
             MessageType::Request(method) => {
                 let method_str = match method {
                     RequestMethod::ACK => "ACK",
@@ -54,7 +54,19 @@ impl Message {
                     RequestMethod::Options => "OPTIONS",
                     RequestMethod::Register => "REGISTER",
                 };
-                format!("{} sip:{}@atlanta.example.com SIP/2.0\r\n", method_str, self.to)
+                Ok(format!("{} sip:{}@atlanta.example.com SIP/2.0\r\n", method_str, self.to))
+            },
+            MessageType::Response(_) => {
+                Err("Incorrect message type.")
+            }
+        }
+    }
+
+    pub fn build_message(&mut self) -> String {
+        let start_line = match &self.mtype {
+            MessageType::Request(method) => {
+                let method_name = self.get_method_name().unwrap();
+                format!("{} sip:{}@atlanta.example.com SIP/2.0\r\n", method_name, self.to)
             },
             MessageType::Response(response) => {
                 format!("SIP/2.0 {}", response)

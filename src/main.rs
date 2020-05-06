@@ -29,7 +29,7 @@ fn main() {
             stream.read(&mut buffer).unwrap();
 
             //stream.write(b"hello").unwrap();
-            let message = sip::Message::new(sip::MessageType::Request(sip::RequestMethod::Register)).to(String::from("tototo")).to_string();
+            let message = sip::Message::new(sip::MessageType::Request(sip::RequestMethod::Register)).to(String::from("tototo")).build_message();
             stream.write(message.as_bytes()).unwrap();
             tx1.send(1).unwrap();
         }
