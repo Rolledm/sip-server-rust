@@ -2,6 +2,8 @@ use std::net::TcpStream;
 use std::io::prelude::*;
 use std::fs;
 
+
+// add rocket.io
 pub fn handle_connection(mut stream: TcpStream) {
     let mut buffer = [0; 512];
     stream.read(&mut buffer).unwrap();
