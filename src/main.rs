@@ -5,6 +5,7 @@ use std::io::prelude::*;
 use std::sync::mpsc;
 
 mod sip;
+mod http;
 
 enum Message {
     SIP(String),
@@ -24,13 +25,15 @@ fn main() {
     let th1 = thread::spawn(move || {
         let l1 = TcpListener::bind("localhost:7878").unwrap();
         for stream in l1.incoming() {
-            let mut stream = stream.unwrap();
-            let mut buffer = [0; 512];
-            stream.read(&mut buffer).unwrap();
+            let stream = stream.unwrap();
+            //let mut buffer = [0; 512];
+            //stream.read(&mut buffer).unwrap();
+
+            http::handle_connection(stream);
 
             //stream.write(b"hello").unwrap();
-            let message = sip::Message::new(sip::MessageType::Request(sip::RequestMethod::Register)).to(String::from("tototo")).build_message();
-            stream.write(message.as_bytes()).unwrap();
+            //let message = sip::Message::new(sip::MessageType::Request(sip::RequestMethod::Register)).to(String::from("tototo")).build_message();
+            //stream.write(message.as_bytes()).unwrap();
             tx1.send(1).unwrap();
         }
     });
