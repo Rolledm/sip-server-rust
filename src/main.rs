@@ -19,27 +19,39 @@ fn main() {
         println!("{}", db_name);
     }
 
-    let (tx, rx): (mpsc::Sender<i32>, mpsc::Receiver<i32>) = mpsc::channel();
+    let (tx, rx): (mpsc::Sender<TcpStream>, mpsc::Receiver<TcpStream>) = mpsc::channel();
     let tx1 = tx.clone();
 
     thread::spawn(move || {
         let l1 = TcpListener::bind("localhost:7878").unwrap();
         for stream in l1.incoming() {
             let stream = stream.unwrap();
-
-            http::handle_connection(stream);
-
-            tx1.send(1).unwrap();
+            tx1.send(stream).unwrap();
         }
     });
     thread::spawn(move || {
         let l2 = TcpListener::bind("localhost:7879").unwrap();
         for stream in l2.incoming() {
-            tx.send(2).unwrap();
+            let stream = stream.unwrap();
+            tx.send(stream).unwrap();
         }
     });
 
     loop {
-        println!("{:?}", rx.recv().unwrap());
+        on_message_received(rx.recv().unwrap());
+    }
+}
+
+fn on_message_received(mut stream: TcpStream) {
+    let mut buffer = [0; 512];
+    stream.read(&mut buffer).unwrap();
+    if buffer.starts_with(b"GET") || buffer.starts_with(b"POST") {
+        println!("HTTP");
+        stream.write("http".as_bytes()).unwrap();
+        stream.flush().unwrap();
+    } else {
+        println!("SIP");
+        stream.write("sip".as_bytes()).unwrap();
+        stream.flush().unwrap();
     }
 }
