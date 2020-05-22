@@ -14,7 +14,8 @@ pub enum RequestMethod {
 }
 
 pub struct Message {
-    mtype: MessageType,
+    mtype: MessageType, // Request/Response
+    request_uri: String,
 
     // Mandatory for request headers:
     to: String,
@@ -23,18 +24,22 @@ pub struct Message {
     call_id: String,
     max_forwards: String,
     via: String,
+
+    body: String,
 }
 
 impl Message {
     pub fn new(mtype: MessageType) -> Message {
         Message {
             mtype: mtype,
+            request_uri: String::new(),
             to: String::new(),
             from: String::new(),
             cceq: String::new(),
             call_id: String::new(),
             max_forwards: String::new(),
             via: String::new(),
+            body: String::new(),
         }
     }
 
