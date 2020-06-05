@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 mongodb = "0.9.1"
 bson = "0.14.0"
+sip_rld = "0.2.4"

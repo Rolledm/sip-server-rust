@@ -4,15 +4,10 @@ use std::net::{TcpListener, TcpStream};
 use std::io::prelude::*;
 use std::sync::mpsc;
 
-mod sip;
 mod http;
 
-enum Message {
-    SIP(String),
-    HTTP(String),
-}
-
 fn main() {
+    println!("Connecting to DB");
     let client_options = ClientOptions::parse("mongodb://localhost:27017").unwrap();
     let client = Client::with_options(client_options).unwrap();
     for db_name in client.list_database_names(None).unwrap() {
@@ -50,8 +45,29 @@ fn on_message_received(mut stream: TcpStream) {
         stream.write("http".as_bytes()).unwrap();
         stream.flush().unwrap();
     } else {
-        println!("SIP");
-        stream.write("sip".as_bytes()).unwrap();
-        stream.flush().unwrap();
+        println!("SIP message received");
+        let message = sip_rld::Message::parse(std::str::from_utf8(&buffer).unwrap());
+        on_sip_message_received(message, stream);
+        //println!("{}", std::str::from_utf8(&buffer).unwrap());
     }
+}
+
+fn on_sip_message_received(message: sip_rld::Message, mut stream: TcpStream) {
+    match &message.mtype {
+        sip_rld::MessageType::Request(request) => {
+            match request {
+                sip_rld::RequestMethod::Register => on_sip_register_received(message, stream),
+                _ => println!("Unknown request!")
+            }
+        },
+        sip_rld::MessageType::Response(responce) => {
+            println!("Response: {}", responce)
+        }
+    }
+    //stream.write("200 OK".as_bytes()).unwrap();
+    //stream.flush().unwrap();
+}
+
+fn on_sip_register_received(message: sip_rld::Message, mut stream: TcpStream) {
+
 }

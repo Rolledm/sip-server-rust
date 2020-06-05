@@ -1000,11 +1000,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "sip_rld"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c7f6099bf3b1ce4bc3d99fee21bcbbaa16349cbcd419be097b45dea88ab72e34"
+
+[[package]]
 name = "sip_server"
 version = "0.0.1"
 dependencies = [
  "bson",
  "mongodb",
+ "sip_rld",
 ]
 
 [[package]]
