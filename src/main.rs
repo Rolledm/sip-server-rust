@@ -3,11 +3,24 @@ use std::thread;
 use std::net::{TcpListener, TcpStream};
 use std::io::prelude::*;
 use std::sync::mpsc;
+use lazy_static::lazy_static;
+use std::collections::HashMap;
 
 mod http;
+mod logger;
+
+lazy_static! {
+    static ref USERS: HashMap<String, TcpStream> = HashMap::new();
+}
 
 fn main() {
     println!("Connecting to DB");
+    logger::Logger::init(logger::Severity::Warning, String::from("./log.log"));
+    
+    logger::log(logger::Severity::Error, "err");
+    logger::log(logger::Severity::Info, "info");
+
+
     let client_options = ClientOptions::parse("mongodb://localhost:27017").unwrap();
     let client = Client::with_options(client_options).unwrap();
     for db_name in client.list_database_names(None).unwrap() {
@@ -18,6 +31,8 @@ fn main() {
     let tx1 = tx.clone();
 
     thread::spawn(move || {
+        logger::log(logger::Severity::Fatal, "fatal");
+
         let l1 = TcpListener::bind("localhost:7878").unwrap();
         for stream in l1.incoming() {
             let stream = stream.unwrap();
