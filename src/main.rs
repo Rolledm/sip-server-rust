@@ -15,7 +15,7 @@ lazy_static! {
 
 fn main() {
     println!("Connecting to DB");
-    logger::Logger::init(logger::Severity::Warning, String::from("./log.log"));
+    logger::Logger::init(logger::Severity::Warning, "./log.log");
     
     logger::log(logger::Severity::Error, "err");
     logger::log(logger::Severity::Info, "info");

@@ -1,5 +1,8 @@
 use lazy_static::lazy_static;
 use std::sync::Mutex;
+use chrono::Utc;
+use std::fs::File;
+use std::io::prelude::*;
 
 lazy_static! {
     static ref LOGGER: Mutex<Option<Logger>> = Mutex::new(None);
@@ -38,24 +41,24 @@ fn number_to_string(number: u32) -> &'static str {
 #[derive(Debug)]
 pub struct Logger {
     max_severity: u32,
-    file: String,
+    file: File,
 }
 
 pub fn log(severity: Severity, text: &str) {
-    let logger = Logger::get_instance().lock().unwrap();
-    match &*logger {
+    let mut logger = Logger::get_instance().lock().unwrap();
+    match &mut *logger {
         None => (),
         Some(logger) => logger.log(severity_to_number(severity), text),
     };
 }
 
 impl Logger {
-    pub fn init(max_severity: Severity, file: String) {
+    pub fn init(max_severity: Severity, file: &str) {
         let mut logger = LOGGER.lock().unwrap();
         if logger.is_none() {
             *logger = Some(Logger {
                 max_severity: severity_to_number(max_severity),
-                file: file,
+                file: File::create(file).unwrap(),
             });
         } else {
             panic!("Logger already initialized!")
@@ -70,10 +73,11 @@ impl Logger {
         }
     }
 
-    // TODO datetime and output to file
-    pub fn log(&self, severity: u32, text: &str) {
+    pub fn log(&mut self, severity: u32, text: &str) {
         if severity <= self.max_severity {
-            println!("{} | {}", number_to_string(severity), text);
+            let message = format!("{} | {} | {}\n", number_to_string(severity), Utc::now().format("%H:%M:%S"), text);
+            print!("{}", message);
+            self.file.write(message.as_bytes()).unwrap();
         }
     }
 }
