@@ -57,13 +57,12 @@ fn on_message_received(mut stream: TcpStream) {
         stream.flush().unwrap();
     } else {
         println!("SIP message received");
-        let message = sip_rld::Message::parse(std::str::from_utf8(&buffer).unwrap());
+        let mut message = sip_rld::Message::parse(std::str::from_utf8(&buffer).unwrap());
         on_sip_message_received(message, stream);
-        //println!("{}", std::str::from_utf8(&buffer).unwrap());
     }
 }
 
-fn on_sip_message_received(message: sip_rld::Message, mut stream: TcpStream) {
+fn on_sip_message_received(mut message: sip_rld::Message, mut stream: TcpStream) {
     match &message.mtype {
         sip_rld::MessageType::Request(request) => {
             match request {
@@ -75,18 +74,20 @@ fn on_sip_message_received(message: sip_rld::Message, mut stream: TcpStream) {
             println!("Response: {}", responce)
         }
     }
-
-    //stream.write("200 OK".as_bytes()).unwrap();
-    //stream.flush().unwrap();
 }
 
-fn on_sip_register_received(message: sip_rld::Message, stream: TcpStream) {
+fn on_sip_register_received(mut message: sip_rld::Message, mut stream: TcpStream) {
     println!("{} connected", message.to);
     {
         let mut users = users_collection::Users::get_instance().lock().unwrap();
         match &mut *users {
             None => (),
-            Some(users) => {users.users.insert(message.to, stream); println!("{:?}", users.users); ()}
+            Some(users) => {
+                message.mtype = sip_rld::MessageType::Response(String::from("200 OK"));
+                stream.write(message.build_message().as_bytes()).unwrap();
+                stream.flush().unwrap();
+                users.users.insert(message.to, stream);
+                println!("{:?}", users.users)}
         };
     }
 }
