@@ -3,19 +3,15 @@ use std::thread;
 use std::net::{TcpListener, TcpStream};
 use std::io::prelude::*;
 use std::sync::mpsc;
-use lazy_static::lazy_static;
-use std::collections::HashMap;
 
 mod http;
 mod logger;
-
-lazy_static! {
-    static ref USERS: HashMap<String, TcpStream> = HashMap::new();
-}
+mod users_collection;
 
 fn main() {
     println!("Connecting to DB");
     logger::Logger::init(logger::Severity::Warning, "./log.log");
+    users_collection::Users::init();
     
     logger::log(logger::Severity::Error, "err");
     logger::log(logger::Severity::Info, "info");
@@ -79,10 +75,18 @@ fn on_sip_message_received(message: sip_rld::Message, mut stream: TcpStream) {
             println!("Response: {}", responce)
         }
     }
+
     //stream.write("200 OK".as_bytes()).unwrap();
     //stream.flush().unwrap();
 }
 
-fn on_sip_register_received(message: sip_rld::Message, mut stream: TcpStream) {
-
+fn on_sip_register_received(message: sip_rld::Message, stream: TcpStream) {
+    println!("{} connected", message.to);
+    {
+        let mut users = users_collection::Users::get_instance().lock().unwrap();
+        match &mut *users {
+            None => (),
+            Some(users) => {users.users.insert(message.to, stream); println!("{:?}", users.users); ()}
+        };
+    }
 }
