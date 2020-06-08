@@ -4,7 +4,7 @@ use std::fs;
 
 
 // add rocket.io
-pub fn handle_connection(mut stream: TcpStream) {
+pub fn on_http_message_received(mut stream: TcpStream) {
     let mut buffer = [0; 512];
     stream.read(&mut buffer).unwrap();
 
