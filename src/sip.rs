@@ -3,6 +3,10 @@ use std::net::TcpStream;
 
 #[path = "users_collection.rs"] mod users_collection;
 
+pub fn init_users() {
+    users_collection::Users::init();
+}
+
 pub fn on_sip_message_received(message: sip_rld::Message, stream: TcpStream) {
     match &message.mtype {
         sip_rld::MessageType::Request(request) => {
@@ -23,7 +27,7 @@ pub fn on_sip_message_received(message: sip_rld::Message, stream: TcpStream) {
 }
 
 pub fn on_sip_register_received(mut message: sip_rld::Message, mut stream: TcpStream) {
-    println!("{} connected", message.to);
+    println!("{} connected", message.request_uri);
     {
         let mut users = users_collection::Users::get_instance().lock().unwrap();
         match &mut *users {
@@ -32,7 +36,7 @@ pub fn on_sip_register_received(mut message: sip_rld::Message, mut stream: TcpSt
                 message.mtype = sip_rld::MessageType::Response(String::from("200 OK"));
                 stream.write(message.build_message().as_bytes()).unwrap();
                 stream.flush().unwrap();
-                users.users.insert(message.to, stream);
+                users.users.insert(message.request_uri, stream);
                 println!("{:?}", users.users)}
         };
     }

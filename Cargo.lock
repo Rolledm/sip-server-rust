@@ -1001,9 +1001,9 @@ dependencies = [
 
 [[package]]
 name = "sip_rld"
-version = "0.3.0"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c3a34a7cbb4f87d7b59f86855f6fa82d01ab58db57437e58881fe75d4dadc57"
+checksum = "156e27976b93f6c26a54c90f3016d5a1aded028b37953f1b135f4e0b1ba78bb3"
 
 [[package]]
 name = "sip_server"

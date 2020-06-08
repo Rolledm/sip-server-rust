@@ -13,7 +13,7 @@ fn main() {
     logger::Logger::init(logger::Severity::Debug, "./log.log");
     logger::log(logger::Severity::Info, "Logger initialized.");
 
-    users_collection::Users::init();
+    sip::init_users();
     logger::log(logger::Severity::Info, "User collection initialized.");
     
     let client_options = ClientOptions::parse("mongodb://localhost:27017").unwrap();
